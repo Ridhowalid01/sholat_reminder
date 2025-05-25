@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../bloc/bloc.dart';
+import '../bloc/state.dart';
 import '../utils/colors/app_colors.dart';
 import '../widgets/prayer_times_row.dart';
 import '../models/prayer_time_data.dart';
@@ -14,6 +17,7 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: LightAppColors.backgroundColor,
       appBar: AppBar(
         leadingWidth: 250,
+        backgroundColor: LightAppColors.backgroundColor,
         leading: Container(
           padding: EdgeInsets.only(left: 16.r),
           child: Row(
@@ -78,19 +82,24 @@ class HomeScreen extends StatelessWidget {
                               "28 April 2025 M",
                               style: TextStyle(fontSize: 14.r),
                             ),
-                            Text(
-                              "17 : 21",
-                              style: TextStyle(
-                                fontSize: 48.r,
-                                fontWeight: FontWeight.w800,
-                              ),
+                            BlocBuilder<ClockBloc, ClockState>(
+                              builder: (context, state) {
+                                return Text(
+                                  state.formattedTime,
+                                  style: TextStyle(
+                                    fontSize: 48.r,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                );
+                              },
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
                                   "Magrib kurang dari ",
-                                  style: TextStyle(fontSize: 14.r, color: Colors.grey),
+                                  style: TextStyle(
+                                      fontSize: 14.r, color: Colors.grey),
                                 ),
                                 Text(
                                   "5 menit",
