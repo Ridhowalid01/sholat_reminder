@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sholat_reminder/pages/home_screen.dart';
 
 void main(){
@@ -10,10 +11,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'Sholat Reminder App',
-      debugShowCheckedModeBanner: false,
-      home: HomeScreen()
+    return const ScreenUtilInit(
+      designSize: Size(411.4, 866.2),
+      child: MaterialApp(
+        title: 'Sholat Reminder App',
+        debugShowCheckedModeBanner: false,
+        home: HomeScreen()
+      ),
     );
   }
 }
