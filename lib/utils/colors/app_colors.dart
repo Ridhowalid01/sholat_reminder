@@ -9,3 +9,8 @@ class LightAppColors {
   static const backgroundColor = Color(0xFFF8F8F8);
   static const cardColor = Color(0xFFFFFFFF);
 }
+
+class DarkAppColors {
+  static const backgroundColor = Color(0xFF121212);
+  static const cardColor = Color(0xFF191919);
+}

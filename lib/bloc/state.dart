@@ -1,4 +1,6 @@
 class ClockState {
-  final String formattedTime;
-  ClockState(this.formattedTime);
+  final String time;
+  final String date;
+
+  ClockState(this.time, this.date);
 }

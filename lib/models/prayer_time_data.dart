@@ -17,5 +17,5 @@ final List<PrayerTimeData> prayerTimes = [
   PrayerTimeData(name: 'Dzuhur', time: '11:34', icon: CupertinoIcons.sun_max),
   PrayerTimeData(name: 'Ashar', time: '14:43', icon: CupertinoIcons.cloud_sun),
   PrayerTimeData(name: 'Maghrib', time: '17:26', icon: CupertinoIcons.sunset),
-  PrayerTimeData(name: 'Isya', time: '18:53', icon: CupertinoIcons.moon_stars),
+  PrayerTimeData(name: 'Isya\'', time: '18:53', icon: CupertinoIcons.moon_stars),
 ];
