@@ -16,7 +16,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ThemeBloc myTheme = context.read<ThemeBloc>();
-    context.read<PrayerTimeCubit>().loadPrayerTimes(-6.2, 106.8);
+    // context.read<PrayerTimeCubit>().loadPrayerTimes(-6.2, 106.8);
 
     return BlocListener<LocationCubit, LocationState>(
       listener: (context, locationState) {
