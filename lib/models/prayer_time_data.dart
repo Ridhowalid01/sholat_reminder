@@ -12,10 +12,13 @@ class PrayerTimeData {
   });
 }
 
-final List<PrayerTimeData> prayerTimes = [
-  PrayerTimeData(name: 'Subuh', time: '04:21', icon: CupertinoIcons.sunrise),
-  PrayerTimeData(name: 'Dzuhur', time: '11:34', icon: CupertinoIcons.sun_max),
-  PrayerTimeData(name: 'Ashar', time: '14:43', icon: CupertinoIcons.cloud_sun),
-  PrayerTimeData(name: 'Maghrib', time: '17:26', icon: CupertinoIcons.sunset),
-  PrayerTimeData(name: 'Isya\'', time: '18:53', icon: CupertinoIcons.moon_stars),
-];
+List<PrayerTimeData> buildPrayerTimeList(Map<String, String> prayerMap) {
+  return [
+    PrayerTimeData(name: 'Subuh', time: prayerMap['Subuh'] ?? '-', icon: CupertinoIcons.sunrise),
+    PrayerTimeData(name: 'Dzuhur', time: prayerMap['Dzuhur'] ?? '-', icon: CupertinoIcons.sun_max),
+    PrayerTimeData(name: 'Ashar', time: prayerMap['Ashar'] ?? '-', icon: CupertinoIcons.cloud_sun),
+    PrayerTimeData(name: 'Maghrib', time: prayerMap['Maghrib'] ?? '-', icon: CupertinoIcons.sunset),
+    PrayerTimeData(name: 'Isya\'', time: prayerMap['Isya\''] ?? '-', icon: CupertinoIcons.moon_stars),
+  ];
+}
+

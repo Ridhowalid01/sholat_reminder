@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:sholat_reminder/bloc/location_cubit.dart';
+import 'package:sholat_reminder/models/prayer_time_cubit.dart';
+import 'package:sholat_reminder/models/prayer_time_repository.dart';
 import 'package:sholat_reminder/pages/home_screen.dart';
 
 import 'bloc/bloc.dart';
@@ -28,7 +30,9 @@ class MyApp extends StatelessWidget {
               BlocProvider<ThemeBloc>(create: (context) => myTheme),
               BlocProvider<ClockBloc>(create: (_) => clockBloc),
               BlocProvider<LocationCubit>(
-                  create: (_) => LocationCubit()..getCurrentLocation())
+                  create: (_) => LocationCubit()..getCurrentLocation()),
+              BlocProvider<PrayerTimeCubit>(
+                  create: (_) => PrayerTimeCubit(PrayerTimeRepository()))
             ],
             child: BlocBuilder<ThemeBloc, bool>(
               bloc: myTheme,
