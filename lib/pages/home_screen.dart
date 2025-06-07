@@ -16,189 +16,249 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ThemeBloc myTheme = context.read<ThemeBloc>();
-    // context.read<PrayerTimeCubit>().loadPrayerTimes(-6.2, 106.8);
 
-    return BlocListener<LocationCubit, LocationState>(
-      listener: (context, locationState) {
-        if (locationState is LocationLoaded) {
-          final pos = locationState.position;
-          context
-              .read<PrayerTimeCubit>()
-              .loadPrayerTimes(pos.latitude, pos.longitude);
-        }
-      },
-      child: BlocBuilder<ThemeBloc, bool>(
-        bloc: myTheme,
-        builder: (context, state) {
-          return Scaffold(
+    return BlocBuilder<ThemeBloc, bool>(
+      bloc: myTheme,
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: state
+              ? DarkAppColors.backgroundColor
+              : LightAppColors.backgroundColor,
+          appBar: AppBar(
+            leadingWidth: 250,
             backgroundColor: state
                 ? DarkAppColors.backgroundColor
                 : LightAppColors.backgroundColor,
-            appBar: AppBar(
-              leadingWidth: 250,
-              backgroundColor: state
-                  ? DarkAppColors.backgroundColor
-                  : LightAppColors.backgroundColor,
-              leading: Container(
-                padding: EdgeInsets.only(left: 16.r),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.location_on,
-                      color: AppColors.iconColor,
-                      size: 24.r,
-                    ),
-                    SizedBox(width: 4.r),
-                    Flexible(child: BlocBuilder<LocationCubit, LocationState>(
-                      builder: (context, state) {
-                        if (state is LocationLoaded) {
-                          final position = state.position;
-
-                          return FutureBuilder<String?>(
-                            future: context
-                                .read<LocationCubit>()
-                                .getAddressFromPosition(position),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const Text("Mencari alamat..");
-                              } else if (snapshot.hasError) {
-                                return Text("Error: ${snapshot.error}");
-                              } else {
-                                return Text(
-                                  '${snapshot.data}',
-                                  style: TextStyle(
-                                      fontSize: 14.r,
-                                      fontWeight: FontWeight.w500),
-                                );
-                              }
-                            },
-                          );
-                        } else if (state is LocationError) {
-                          return Text("Error: ${state.message}");
-                        }
-                        return Text("Memuat..");
-                      },
-                    )),
-                  ],
-                ),
-              ),
-              actions: [
-                Padding(
-                  padding: EdgeInsets.only(right: 16.r),
-                  child: IconButton(
-                      onPressed: () {
-                        myTheme.changeTheme();
-                      },
-                      icon: Icon(
-                        state
-                            ? Icons.light_mode_outlined
-                            : Icons.dark_mode_outlined,
-                        color: AppColors.iconColor,
-                        size: 24.r,
-                      )),
-                ),
-              ],
-            ),
-            body: Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.r, horizontal: 20.r),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 20.r,
+            leading: Container(
+              padding: EdgeInsets.only(left: 16.r),
+              child: Row(
                 children: [
-                  Text(
-                    "Selamat Datang, Xyzel",
-                    style: TextStyle(
-                      fontSize: 24.r,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Icon(
+                    Icons.location_on,
+                    color: AppColors.iconColor,
+                    size: 24.r,
                   ),
-                  Card(
-                      color: state
-                          ? DarkAppColors.cardColor
-                          : LightAppColors.cardColor,
-                      elevation: 5,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30.r),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(20.r),
-                        child: SizedBox(
-// height: 300.r,
-                          width: double.maxFinite,
-                          child: Column(
-                            spacing: 16.r,
-                            children: [
-                              Column(
-                                children: [
-                                  BlocBuilder<ClockBloc, ClockState>(
-                                    buildWhen: (prev, current) =>
-                                        prev.date != current.date,
-                                    builder: (context, state) {
-                                      return Text(
-                                        state.date,
-                                        style: TextStyle(fontSize: 14.r),
-                                      );
-                                    },
-                                  ),
-                                  BlocBuilder<ClockBloc, ClockState>(
-                                    builder: (context, state) {
-                                      return Text(
-                                        state.time,
-                                        style: TextStyle(
-                                          fontSize: 48.r,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        "Magrib kurang dari ",
-                                        style: TextStyle(
-                                            fontSize: 14.r, color: Colors.grey),
-                                      ),
-                                      Text(
-                                        "5 menit",
-                                        style: TextStyle(fontSize: 14.r),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              const Divider(
-                                color: Colors.grey,
-                                thickness: 1,
-                                height: 1,
-                              ),
-                              BlocBuilder<PrayerTimeCubit, PrayerTimeState>(
-                                builder: (context, prayerState) {
-                                  if (prayerState.isLoading) {
-                                    return const Center(
-                                        child: CircularProgressIndicator());
-                                  } else if (prayerState.error != null) {
-                                    return Center(
-                                        child: Text(
-                                            "Error: ${prayerState.error}"));
-                                  } else {
-                                    final prayerList = buildPrayerTimeList(
-                                        prayerState.prayerTimes);
-                                    return PrayerTimesRow(prayers: prayerList);
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ))
+                  SizedBox(width: 4.r),
+                  Flexible(child: BlocBuilder<LocationCubit, LocationState>(
+                    builder: (context, state) {
+                      if (state is LocationLoaded) {
+                        final position = state.position;
+
+                        return FutureBuilder<String?>(
+                          future: context
+                              .read<LocationCubit>()
+                              .getAddressFromPosition(position),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Text("Mencari alamat..");
+                            } else if (snapshot.hasError) {
+                              return Text("Error: ${snapshot.error}");
+                            } else {
+                              return Text(
+                                '${snapshot.data}',
+                                style: TextStyle(
+                                    fontSize: 14.r,
+                                    fontWeight: FontWeight.w500),
+                              );
+                            }
+                          },
+                        );
+                      } else if (state is LocationError) {
+                        return Text("Error: ${state.message}");
+                      }
+                      return Text("Memuat..");
+                    },
+                  )),
                 ],
               ),
             ),
-          );
-        },
-      ),
+            actions: [
+              Padding(
+                padding: EdgeInsets.only(right: 16.r),
+                child: IconButton(
+                    onPressed: () {
+                      myTheme.changeTheme();
+                    },
+                    icon: Icon(
+                      state
+                          ? Icons.light_mode_outlined
+                          : Icons.dark_mode_outlined,
+                      color: AppColors.iconColor,
+                      size: 24.r,
+                    )),
+              ),
+            ],
+          ),
+          body: Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.r, horizontal: 20.r),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 20.r,
+              children: [
+                Text(
+                  "Selamat Datang, Xyzel",
+                  style: TextStyle(
+                    fontSize: 24.r,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Card(
+                    color: state
+                        ? DarkAppColors.cardColor
+                        : LightAppColors.cardColor,
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.r),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(20.r),
+                      child: SizedBox(
+                        width: double.maxFinite,
+                        child: Column(
+                          spacing: 16.r,
+                          children: [
+                            Column(
+                              children: [
+                                BlocBuilder<ClockBloc, ClockState>(
+                                  buildWhen: (prev, current) =>
+                                      prev.date != current.date,
+                                  builder: (context, state) {
+                                    return Text(
+                                      state.date,
+                                      style: TextStyle(fontSize: 14.r),
+                                    );
+                                  },
+                                ),
+                                BlocBuilder<ClockBloc, ClockState>(
+                                  builder: (context, state) {
+                                    return Text(
+                                      state.time,
+                                      style: TextStyle(
+                                        fontSize: 48.r,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    );
+                                  },
+                                ),
+
+                                BlocBuilder<PrayerTimeCubit, PrayerTimeState>(
+                                  builder: (context, prayerState) {
+                                    final now = DateTime.now();
+
+                                    final prayerTimes = prayerState.prayerTimes;
+
+                                    if (prayerTimes.isEmpty || prayerTimes.values.contains('-')) {
+                                      return const Text(" ");
+                                    }
+
+                                    String nextPrayer = '-';
+                                    String timeRemaining = '-';
+
+                                    // Format waktu sholat ke bentuk DateTime
+                                    List<MapEntry<String, DateTime>> prayerDateTimes = [];
+
+                                    prayerTimes.forEach((name, time) {
+                                      try {
+                                        final parts = time.split(':');
+                                        final hour = int.parse(parts[0]);
+                                        final minute = int.parse(parts[1]);
+
+                                        final dt = DateTime(
+                                          now.year,
+                                          now.month,
+                                          now.day,
+                                          hour,
+                                          minute,
+                                        );
+
+                                        prayerDateTimes.add(MapEntry(name, dt));
+                                      } catch (e) {
+                                        // skip parsing error
+                                      }
+                                    });
+
+                                    prayerDateTimes.sort((a, b) => a.value.compareTo(b.value));
+
+                                    // Cek apakah sekarang masih sebelum waktu sholat
+                                    for (var entry in prayerDateTimes) {
+                                      if (entry.value.isAfter(now)) {
+                                        final diff = entry.value.difference(now);
+                                        nextPrayer = entry.key;
+                                        timeRemaining = diff.inHours > 0
+                                            ? "${diff.inHours} jam ${diff.inMinutes % 60} menit"
+                                            : "${diff.inMinutes} menit";
+                                        break;
+                                      }
+                                    }
+
+                                    // Jika semua waktu sudah lewat, ambil waktu sholat pertama besok
+                                    if (nextPrayer == '-') {
+                                      final firstPrayer = prayerDateTimes.first;
+                                      final tomorrow = firstPrayer.value.add(const Duration(days: 1));
+                                      final diff = tomorrow.difference(now);
+                                      nextPrayer = firstPrayer.key;
+                                      timeRemaining = diff.inHours > 0
+                                          ? "${diff.inHours} jam ${diff.inMinutes % 60} menit"
+                                          : "${diff.inMinutes} menit";
+                                    }
+
+                                    return Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          "$nextPrayer kurang dari ",
+                                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                                        ),
+                                        Text(
+                                          timeRemaining,
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                )
+
+
+                              ],
+                            ),
+                            const Divider(
+                              color: Colors.grey,
+                              thickness: 1,
+                              height: 1,
+                            ),
+                            BlocBuilder<PrayerTimeCubit, PrayerTimeState>(
+                              builder: (context, prayerState) {
+                                final prayerTimes =
+                                    prayerState.prayerTimes.isEmpty
+                                        ? {
+                                            'Subuh': '-',
+                                            'Dzuhur': '-',
+                                            'Ashar': '-',
+                                            'Maghrib': '-',
+                                            'Isya\'': '-',
+                                          }
+                                        : prayerState.prayerTimes;
+
+                                if (prayerState.error != null) {
+                                  return Center(
+                                      child:
+                                          Text("Error: ${prayerState.error}"));
+                                }
+                                final prayerList =
+                                    buildPrayerTimeList(prayerTimes);
+                                return PrayerTimesRow(prayers: prayerList);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ))
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
