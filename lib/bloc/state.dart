@@ -1,6 +1,7 @@
 class ClockState {
+  final DateTime dateTime;
   final String time;
   final String date;
 
-  ClockState(this.time, this.date);
+  ClockState(this.dateTime, this.time, this.date);
 }

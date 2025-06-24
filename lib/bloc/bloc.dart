@@ -18,8 +18,13 @@ class ClockBloc extends Bloc<ClockEvent, ClockState> {
   late Timer _timer;
 
   ClockBloc()
-      : super(ClockState(
-            _formatTime(DateTime.now()), _formatDate(DateTime.now()))) {
+      : super(
+    ClockState(
+      DateTime.now(),
+      _formatTime(DateTime.now()),
+      _formatDate(DateTime.now()),
+    ),
+  ) {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final now = DateTime.now();
       add(Tick(now));
@@ -28,7 +33,10 @@ class ClockBloc extends Bloc<ClockEvent, ClockState> {
     on<Tick>((event, emit) {
       emit(
         ClockState(
-            _formatTime(event.currentTime), _formatDate(event.currentTime)),
+          event.currentTime,
+          _formatTime(event.currentTime),
+          _formatDate(event.currentTime),
+        ),
       );
     });
   }
@@ -47,3 +55,4 @@ class ClockBloc extends Bloc<ClockEvent, ClockState> {
     return super.close();
   }
 }
+
