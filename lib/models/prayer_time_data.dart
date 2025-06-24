@@ -4,12 +4,22 @@ class PrayerTimeData {
   final String name;
   final String time;
   final IconData icon;
+  final bool isDone;
 
   PrayerTimeData({
     required this.name,
     required this.time,
     required this.icon,
+    this.isDone = false,
   });
+  PrayerTimeData copyWith({bool? isDone}) {
+    return PrayerTimeData(
+      name: name,
+      time: time,
+      icon: icon,
+      isDone: isDone ?? this.isDone,
+    );
+  }
 }
 
 List<PrayerTimeData> buildPrayerTimeList(Map<String, String> prayerMap) {

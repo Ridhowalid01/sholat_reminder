@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:sholat_reminder/bloc/state.dart';
 
+import '../models/prayer_time_data.dart';
 import 'event.dart';
 
 class ThemeBloc extends Cubit<bool> {
@@ -56,3 +57,15 @@ class ClockBloc extends Bloc<ClockEvent, ClockState> {
   }
 }
 
+class PrayerChecklistCubit extends Cubit<List<PrayerTimeData>> {
+  PrayerChecklistCubit(super.initial);
+
+  void togglePrayer(String name) {
+    emit(state.map((prayer) {
+      if (prayer.name == name) {
+        return prayer.copyWith(isDone: !prayer.isDone);
+      }
+      return prayer;
+    }).toList());
+  }
+}
