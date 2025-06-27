@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
         builder: (context) {
           final ClockBloc clockBloc = ClockBloc();
           final ThemeBloc myTheme = ThemeBloc();
-          final prayerTimeCubit = PrayerTimeCubit(PrayerTimeRepository());
+          final prayerTimeCubit = PrayerTimeCubit(PrayerTimeRepository())..loadFromCache();
 
           return MultiBlocProvider(
             providers: [

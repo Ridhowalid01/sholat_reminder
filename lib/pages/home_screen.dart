@@ -6,6 +6,7 @@ import 'package:sholat_reminder/widgets/location_display.dart';
 import 'package:sholat_reminder/widgets/prayer_time_section.dart';
 
 import '../bloc/bloc.dart';
+import '../bloc/location_cubit.dart';
 import '../models/prayer_time_cubit.dart';
 import '../models/prayer_time_data.dart';
 import '../utils/colors/app_colors.dart';
@@ -32,7 +33,7 @@ class HomeScreen extends StatelessWidget {
                     ? DarkAppColors.backgroundColor
                     : LightAppColors.backgroundColor,
                 appBar: AppBar(
-                  leadingWidth: 250,
+                  leadingWidth: 320.r,
                   backgroundColor: themeState
                       ? DarkAppColors.backgroundColor
                       : LightAppColors.backgroundColor,
@@ -53,29 +54,49 @@ class HomeScreen extends StatelessWidget {
                   actions: [
                     Padding(
                       padding: EdgeInsets.only(right: 16.r),
-                      child: IconButton(
-                          onPressed: () {
-                            myTheme.changeTheme();
-                          },
-                          icon: Icon(
-                            themeState
-                                ? Icons.light_mode_outlined
-                                : Icons.dark_mode_outlined,
-                            color: AppColors.iconColor,
-                            size: 24.r,
-                          )),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              onPressed: () {
+                                context
+                                    .read<LocationCubit>()
+                                    .refreshLocation();
+                              },
+                              icon: Icon(
+                                Icons.refresh_outlined,
+                                color: AppColors.iconColor,
+                                size: 24.r,
+                              )),
+                          IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              onPressed: () {
+                                myTheme.changeTheme();
+                              },
+                              icon: Icon(
+                                themeState
+                                    ? Icons.light_mode_outlined
+                                    : Icons.dark_mode_outlined,
+                                color: AppColors.iconColor,
+                                size: 24.r,
+                              )),
+                        ],
+                      ),
                     ),
                   ],
                 ),
                 body: Padding(
-                  padding: EdgeInsets.symmetric(
-                      vertical: 16.r, horizontal: 20.r),
+                  padding:
+                      EdgeInsets.symmetric(vertical: 16.r, horizontal: 20.r),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     spacing: 20.r,
                     children: [
                       Text(
-                        "Selamat Datang, Xyzel",
+                        "Selamat Datang, Ridho-kun",
                         style: TextStyle(
                           fontSize: 24.r,
                           fontWeight: FontWeight.bold,
@@ -124,7 +145,7 @@ class HomeScreen extends StatelessWidget {
                                 children: [
                                   Row(
                                     mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Icon(
                                         Icons.checklist_outlined,

@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../storage/prayer_time_storage.dart';
 import 'prayer_time_repository.dart';
 
 class PrayerTimeState {
@@ -36,8 +37,17 @@ class PrayerTimeCubit extends Cubit<PrayerTimeState> {
     try {
       final data = await repository.fetchPrayerTimes(lat, lng);
       emit(PrayerTimeState(prayerTimes: data, isLoading: false));
+
+      await PrayerTimeStorage.savePrayerTimes(data);
     } catch (e) {
       emit(state.copyWith(error: e.toString(), isLoading: false));
+    }
+  }
+
+  Future<void> loadFromCache() async {
+    final cachedData = await PrayerTimeStorage.loadPrayerTimes();
+    if (cachedData != null && cachedData.isNotEmpty) {
+      emit(state.copyWith(prayerTimes: cachedData));
     }
   }
 }
