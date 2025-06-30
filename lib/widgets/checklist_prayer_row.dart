@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:sholat_reminder/models/prayer_time_data.dart';
 
-import '../bloc/bloc.dart';
+import '../bloc/prayer_checklist_cubit.dart';
 
 class ChecklistPrayerRow extends StatelessWidget {
 
@@ -20,7 +20,7 @@ class ChecklistPrayerRow extends StatelessWidget {
               children: [
                 IconButton(
                   onPressed: () {
-                    context.read<PrayerChecklistCubit>().togglePrayer(prayer.name);
+                    context.read<PrayerChecklistCubit>().togglePrayerStatus(prayer.name);
                   },
                   icon: Icon(
                     prayer.isDone

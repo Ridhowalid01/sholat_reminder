@@ -1,10 +1,11 @@
 import 'dart:async';
+import 'dart:math' as logger;
 
 import 'package:bloc/bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:sholat_reminder/bloc/prayer_checklist_cubit.dart';
 import 'package:sholat_reminder/bloc/state.dart';
 
-import '../models/prayer_time_data.dart';
 import 'event.dart';
 
 class ThemeBloc extends Cubit<bool> {
@@ -17,21 +18,26 @@ class ThemeBloc extends Cubit<bool> {
 
 class ClockBloc extends Bloc<ClockEvent, ClockState> {
   late Timer _timer;
+  DateTime? _lastResetDate;
+  final PrayerChecklistCubit checklistCubit;
+  final Map<String, String> prayerTimes;
 
-  ClockBloc()
-      : super(
-    ClockState(
-      DateTime.now(),
-      _formatTime(DateTime.now()),
-      _formatDate(DateTime.now()),
-    ),
-  ) {
+  ClockBloc({
+    required this.checklistCubit,
+    required this.prayerTimes,
+  }) : super(
+          ClockState(
+            DateTime.now(),
+            _formatTime(DateTime.now()),
+            _formatDate(DateTime.now()),
+          ),
+        ) {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final now = DateTime.now();
       add(Tick(now));
     });
 
-    on<Tick>((event, emit) {
+    on<Tick>((event, emit) async {
       emit(
         ClockState(
           event.currentTime,
@@ -39,7 +45,34 @@ class ClockBloc extends Bloc<ClockEvent, ClockState> {
           _formatDate(event.currentTime),
         ),
       );
+      await _checkForSubuhReset(event.currentTime);
     });
+  }
+
+  Future<void> _checkForSubuhReset(DateTime now) async {
+    final subuhStr = prayerTimes['Subuh'];
+    if (subuhStr == null) return;
+
+    final today = DateTime(now.year, now.month, now.day);
+    if (_lastResetDate == today) return;
+
+    try {
+      final subuhParts = subuhStr.split(':');
+      final subuhTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        int.parse(subuhParts[0]),
+        int.parse(subuhParts[1]),
+      );
+
+      if (now.isAfter(subuhTime)) {
+        await checklistCubit.refreshProgress();
+        _lastResetDate = today;
+      }
+    } catch (e) {
+      logger.e;
+    }
   }
 
   static String _formatTime(DateTime time) {
@@ -54,18 +87,5 @@ class ClockBloc extends Bloc<ClockEvent, ClockState> {
   Future<void> close() {
     _timer.cancel();
     return super.close();
-  }
-}
-
-class PrayerChecklistCubit extends Cubit<List<PrayerTimeData>> {
-  PrayerChecklistCubit(super.initial);
-
-  void togglePrayer(String name) {
-    emit(state.map((prayer) {
-      if (prayer.name == name) {
-        return prayer.copyWith(isDone: !prayer.isDone);
-      }
-      return prayer;
-    }).toList());
   }
 }

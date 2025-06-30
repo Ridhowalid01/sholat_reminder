@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../storage/prayer_time_storage.dart';
 import 'prayer_time_repository.dart';
 
@@ -45,9 +48,12 @@ class PrayerTimeCubit extends Cubit<PrayerTimeState> {
   }
 
   Future<void> loadFromCache() async {
-    final cachedData = await PrayerTimeStorage.loadPrayerTimes();
-    if (cachedData != null && cachedData.isNotEmpty) {
-      emit(state.copyWith(prayerTimes: cachedData));
+    final prefs = await SharedPreferences.getInstance();
+    final cached = prefs.getString('prayer_times');
+    if (cached != null) {
+      final data = jsonDecode(cached) as Map<String, dynamic>;
+      final map = data.map((key, value) => MapEntry(key, value.toString()));
+      emit(PrayerTimeState(prayerTimes: map));
     }
   }
 }
