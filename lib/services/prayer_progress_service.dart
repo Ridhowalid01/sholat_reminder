@@ -1,29 +1,23 @@
-// lib/services/prayer_progress_service.dart
+
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart'; // Untuk format tanggal
+import 'package:intl/intl.dart';
 
 class PrayerProgressService {
   static const String _progressPrefix = 'prayer_progress_';
   static const String _lastResetDateKey =
-      'prayer_progress_last_reset_date'; // Kunci untuk tanggal reset terakhir
+      'prayer_progress_last_reset_date';
 
-  // Mendapatkan kunci SharedPreferences untuk progres sholat pada tanggal tertentu
   String _getPrayerProgressKeyForDate(DateTime date) {
     final DateFormat formatter = DateFormat('yyyy-MM-dd');
     return '$_progressPrefix${formatter.format(date)}';
   }
 
-  // Mendapatkan string tanggal hari ini
   String _getTodayDateString() {
     final DateFormat formatter = DateFormat('yyyy-MM-dd');
     return formatter.format(DateTime.now());
   }
 
-  /// Memeriksa apakah hari telah berganti. Jika ya, progres hari sebelumnya tidak akan dimuat
-  /// untuk hari ini, efektifnya "mereset" untuk hari baru.
-  /// Ini juga memastikan bahwa jika aplikasi dibuka pertama kali di hari baru,
-  /// data lama tidak tercampur.
   Future<void> checkAndClearOldProgressIfNeeded() async {
     final prefs = await SharedPreferences.getInstance();
     final String todayDateString = _getTodayDateString();
