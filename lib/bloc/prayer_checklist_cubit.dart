@@ -7,54 +7,90 @@ import '../services/prayer_progress_service.dart';
 class PrayerChecklistCubit extends Cubit<List<PrayerTimeData>> {
   final PrayerProgressService _progressService;
   final List<PrayerTimeData> _basePrayerSchedule;
+  final Map<String, String> _prayerTimesMap;
 
   PrayerChecklistCubit({
     required PrayerProgressService progressService,
     required List<PrayerTimeData> initialPrayerSchedule,
+    required Map<String, String> prayerTimesMap,
   })  : _progressService = progressService,
-        _basePrayerSchedule = List.unmodifiable(initialPrayerSchedule
-            .map((p) => p.copyWith(isDone: false))
-            .toList()),
+        _basePrayerSchedule = List.unmodifiable(
+          initialPrayerSchedule.map((p) => p.copyWith(isDone: false)).toList(),
+        ),
+        _prayerTimesMap = prayerTimesMap,
         super([]) {
-    _initialize();
+    _initializeOrLoadAppropriateChecklist();
   }
 
-  Future<void> _initialize() async {
-    await _progressService.checkAndClearOldProgressIfNeeded();
-    final Map<String, bool> todaysProgress =
-        await _progressService.getTodaysProgress();
+  Future<void> _initializeOrLoadAppropriateChecklist() async {
+    final now = DateTime.now();
+    Map<String, bool> progressToUse = await _progressService.getTodaysProgress();
 
-    final List<PrayerTimeData> checklist =
-        _basePrayerSchedule.map((basePrayer) {
+    if (progressToUse.isEmpty) {
+      final subuhStr = _prayerTimesMap['Subuh'];
+
+      if (subuhStr != null) {
+        final subuhParts = subuhStr.split(':');
+        if (subuhParts.length == 2) {
+          final subuhHour = int.tryParse(subuhParts[0]);
+          final subuhMinute = int.tryParse(subuhParts[1]);
+
+          if (subuhHour != null && subuhMinute != null) {
+            final subuhTimeToday = DateTime(
+              now.year,
+              now.month,
+              now.day,
+              subuhHour,
+              subuhMinute,
+            );
+
+            if (now.isBefore(subuhTimeToday)) {
+              progressToUse = await _progressService.getYesterdaysProgress();
+            }
+          }
+        }
+      }
+    }
+
+    final checklist = _basePrayerSchedule.map((basePrayer) {
       return basePrayer.copyWith(
-          isDone: todaysProgress[basePrayer.name] ?? basePrayer.isDone);
+        isDone: progressToUse[basePrayer.name] ?? basePrayer.isDone,
+      );
     }).toList();
 
     emit(checklist);
   }
 
   Future<void> togglePrayerStatus(String prayerName) async {
-    final PrayerTimeData? prayerToUpdate =
-        state.firstWhereOrNull((p) => p.name == prayerName);
+    final prayerToUpdate = state.firstWhereOrNull((p) => p.name == prayerName);
+    if (prayerToUpdate == null) return;
 
-    if (prayerToUpdate == null) {
-      return;
-    }
-
-    final bool newStatus = !prayerToUpdate.isDone;
-    await _progressService.updatePrayerStatus(prayerName, newStatus);
-
-    final List<PrayerTimeData> updatedList = state.map((prayer) {
-      if (prayer.name == prayerName) {
-        return prayer.copyWith(isDone: newStatus);
-      }
-      return prayer;
+    final newStatus = !prayerToUpdate.isDone;
+    final updatedList = state.map((p) {
+      return p.name == prayerName ? p.copyWith(isDone: newStatus) : p;
     }).toList();
 
     emit(updatedList);
+
+    final progressMap = {
+      for (var p in updatedList) p.name: p.isDone,
+    };
+
+    await _progressService.saveTodaysProgress(progressMap);
   }
 
-  Future<void> refreshProgress() async {
-    await _initialize();
+  Future<void> resetChecklistForNewDay() async {
+    final newChecklist = List<PrayerTimeData>.from(_basePrayerSchedule);
+    emit(newChecklist);
+
+    final newProgress = {
+      for (var prayer in _basePrayerSchedule) prayer.name: false,
+    };
+
+    await _progressService.saveTodaysProgress(newProgress);
+  }
+
+  Future<void> forceRefreshChecklistFromStorage() async {
+    await _initializeOrLoadAppropriateChecklist();
   }
 }

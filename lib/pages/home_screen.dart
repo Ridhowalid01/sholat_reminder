@@ -56,10 +56,10 @@ class HomeScreen extends StatelessWidget {
                         constraints: const BoxConstraints(),
                         onPressed: () async {
                           final locCubit = context.read<LocationCubit>();
-                          final checklistCubit = context.read<PrayerChecklistCubit>();
+                          // final checklistCubit = context.read<PrayerChecklistCubit>();
 
                           await locCubit.refreshLocation();
-                          checklistCubit.refreshProgress();
+                          // checklistCubit.forceRefreshChecklistFromStorage();
                         },
                         icon: Icon(
                           Icons.refresh_outlined,
@@ -90,8 +90,7 @@ class HomeScreen extends StatelessWidget {
               final doneCount = prayerChecklist.where((e) => e.isDone).length;
               final totalPrayers = prayerChecklist.length;
               return Padding(
-                padding:
-                EdgeInsets.symmetric(vertical: 16.r, horizontal: 20.r),
+                padding: EdgeInsets.symmetric(vertical: 16.r, horizontal: 20.r),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   spacing: 20.r,
@@ -146,7 +145,7 @@ class HomeScreen extends StatelessWidget {
                               children: [
                                 Row(
                                   mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Icon(
                                       Icons.checklist_outlined,
@@ -160,7 +159,9 @@ class HomeScreen extends StatelessWidget {
                                       ),
                                     ),
                                     Text(
-                                      totalPrayers > 0 ? "$doneCount/$totalPrayers" : "0/0",
+                                      totalPrayers > 0
+                                          ? "$doneCount/$totalPrayers"
+                                          : "0/0",
                                       style: TextStyle(
                                         fontSize: 16.r,
                                         fontWeight: FontWeight.bold,

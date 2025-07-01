@@ -6,7 +6,6 @@ import 'package:sholat_reminder/models/prayer_time_data.dart';
 import '../bloc/prayer_checklist_cubit.dart';
 
 class ChecklistPrayerRow extends StatelessWidget {
-
   const ChecklistPrayerRow({super.key});
 
   @override
@@ -20,16 +19,18 @@ class ChecklistPrayerRow extends StatelessWidget {
               children: [
                 IconButton(
                   onPressed: () {
-                    context.read<PrayerChecklistCubit>().togglePrayerStatus(prayer.name);
+                    context
+                        .read<PrayerChecklistCubit>()
+                        .togglePrayerStatus(prayer.name);
                   },
                   icon: Icon(
                     prayer.isDone
                         ? Icons.check_circle_outline_outlined
                         : Icons.radio_button_unchecked_outlined,
                     size: 24.r,
-                    color: prayer.isDone ? Colors.blue : IconTheme
-                        .of(context)
-                        .color,
+                    color: prayer.isDone
+                        ? Colors.blue
+                        : IconTheme.of(context).color,
                   ),
                 ),
                 Text(

@@ -6,7 +6,9 @@ import '../models/prayer_time_data.dart';
 class PrayerTimesRow extends StatelessWidget {
   final List<PrayerTimeData> prayers;
   final String? currentPrayer;
-  const PrayerTimesRow({super.key, required this.prayers, required this.currentPrayer});
+
+  const PrayerTimesRow(
+      {super.key, required this.prayers, required this.currentPrayer});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,9 @@ class PrayerTimesRow extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 14.r,
-                color: isActive ? Colors.blue : Theme.of(context).textTheme.bodySmall?.color,
+                color: isActive
+                    ? Colors.blue
+                    : Theme.of(context).textTheme.bodySmall?.color,
               ),
             ),
             Icon(
@@ -35,7 +39,9 @@ class PrayerTimesRow extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 14.r,
-                color: isActive ? Colors.blue : Theme.of(context).textTheme.bodySmall?.color,
+                color: isActive
+                    ? Colors.blue
+                    : Theme.of(context).textTheme.bodySmall?.color,
               ),
             ),
           ],

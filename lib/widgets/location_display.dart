@@ -15,7 +15,8 @@ class LocationDisplay extends StatelessWidget {
           final position = state.position;
 
           return FutureBuilder<String?>(
-            future: context.read<LocationCubit>().getAddressFromPosition(position),
+            future:
+                context.read<LocationCubit>().getAddressFromPosition(position),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Text("Mencari alamat..");

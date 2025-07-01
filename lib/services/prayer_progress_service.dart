@@ -1,62 +1,28 @@
-
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PrayerProgressService {
   static const String _progressPrefix = 'prayer_progress_';
-  static const String _lastResetDateKey =
-      'prayer_progress_last_reset_date';
 
   String _getPrayerProgressKeyForDate(DateTime date) {
     final DateFormat formatter = DateFormat('yyyy-MM-dd');
-    return '$_progressPrefix${formatter.format(date)}';
+    final String key = '$_progressPrefix${formatter.format(date)}';
+
+    return key;
   }
 
-  String _getTodayDateString() {
-    final DateFormat formatter = DateFormat('yyyy-MM-dd');
-    return formatter.format(DateTime.now());
-  }
-
-  Future<void> checkAndClearOldProgressIfNeeded() async {
+  Future<void> saveProgressForDate(
+      DateTime date, Map<String, bool> progress) async {
     final prefs = await SharedPreferences.getInstance();
-    final String todayDateString = _getTodayDateString();
-    final String? lastResetDateString = prefs.getString(_lastResetDateKey);
-
-    bool needsCleanup = false;
-
-    if (lastResetDateString == null) {
-      await prefs.setString(_lastResetDateKey, todayDateString);
-      needsCleanup = true;
-    } else if (lastResetDateString != todayDateString) {
-      await prefs.setString(_lastResetDateKey, todayDateString);
-      needsCleanup = true;
-    } else {
-      return;
-    }
-
-    if (needsCleanup) {
-      final Set<String> keys = prefs.getKeys();
-      final String todayProgressKey =
-          _getPrayerProgressKeyForDate(DateTime.now());
-
-      for (String key in keys) {
-        if (key.startsWith(_progressPrefix) && key != todayProgressKey) {
-          await prefs.remove(key);
-        }
-      }
-    }
-  }
-
-  Future<void> saveTodaysProgress(Map<String, bool> progress) async {
-    final prefs = await SharedPreferences.getInstance();
-    final String key = _getPrayerProgressKeyForDate(DateTime.now());
+    final String key = _getPrayerProgressKeyForDate(date);
     await prefs.setString(key, jsonEncode(progress));
   }
 
-  Future<Map<String, bool>> getTodaysProgress() async {
+  Future<Map<String, bool>> getProgressForDate(DateTime date) async {
     final prefs = await SharedPreferences.getInstance();
-    final String key = _getPrayerProgressKeyForDate(DateTime.now());
+    final String key = _getPrayerProgressKeyForDate(date);
     final String? progressString = prefs.getString(key);
 
     if (progressString != null) {
@@ -70,8 +36,20 @@ class PrayerProgressService {
         return {};
       }
     }
-
     return {};
+  }
+
+  Future<void> saveTodaysProgress(Map<String, bool> progress) async {
+    await saveProgressForDate(DateTime.now(), progress);
+  }
+
+  Future<Map<String, bool>> getTodaysProgress() async {
+    return await getProgressForDate(DateTime.now());
+  }
+
+  Future<Map<String, bool>> getYesterdaysProgress() async {
+    final yesterday = DateTime.now().subtract(const Duration(days: 1));
+    return await getProgressForDate(yesterday);
   }
 
   Future<void> updatePrayerStatus(String prayerName, bool isDone) async {
@@ -82,11 +60,8 @@ class PrayerProgressService {
 
   Future<void> clearAllPrayerProgressData() async {
     final prefs = await SharedPreferences.getInstance();
-    final Set<String> keysToRemove = prefs
-        .getKeys()
-        .where((key) =>
-            key.startsWith(_progressPrefix) || key == _lastResetDateKey)
-        .toSet();
+    final Set<String> keysToRemove =
+        prefs.getKeys().where((key) => key.startsWith(_progressPrefix)).toSet();
     for (String key in keysToRemove) {
       await prefs.remove(key);
     }
