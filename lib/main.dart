@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_background/flutter_background.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:sholat_reminder/utils/logger.dart';
 
 import 'bloc/bloc.dart';
@@ -29,8 +32,33 @@ Future<Map<String, String>> getRawPrayerTimesMap(
   }
 }
 
-void main() async {
+Future<void> requestNotificationPermission() async {
+  final status = await Permission.notification.status;
+  if (!status.isGranted) {
+    await Permission.notification.request();
+  }
+}
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+Future<void> enableBackgroundMode() async {
+  final androidConfig = FlutterBackgroundAndroidConfig(
+    notificationTitle: "Sholat Reminder aktif",
+    notificationText: "Aplikasi berjalan di background untuk mengingatkan waktu sholat.",
+    notificationImportance: AndroidNotificationImportance.normal,
+    notificationIcon: const AndroidResource(name: 'ic_launcher', defType: 'mipmap'),
+  );
+
+  await FlutterBackground.initialize(androidConfig: androidConfig);
+  await FlutterBackground.enableBackgroundExecution();
+}
+
+
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await requestNotificationPermission();
   await initializeDateFormatting('id', null);
 
   final prayerProgressService = PrayerProgressService();
@@ -48,6 +76,17 @@ void main() async {
 
   // Konversi ke model
   final initialScheduleForChecklist = buildPrayerTimeList(rawPrayerTimes);
+
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+  enableBackgroundMode();
 
   runApp(MyApp(
     prayerProgressService: prayerProgressService,

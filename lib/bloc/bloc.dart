@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:sholat_reminder/bloc/prayer_checklist_cubit.dart';
 import 'package:sholat_reminder/bloc/state.dart';
+import '../services/notification_service.dart';
 import '../utils/logger.dart';
 import 'event.dart';
 
@@ -20,26 +21,44 @@ class ClockBloc extends Bloc<ClockEvent, ClockState> {
   late final Timer _timer;
   DateTime? _lastResetDate;
 
-  static const String _lastResetDateKeyPrefs = 'clock_bloc_last_reset_date_prefs';
+  final Set<String> _notifiedPrayerTimesToday = {};
+  DateTime? _lastNotificationResetDay;
+
+  static const String _lastResetDateKeyPrefs =
+      'clock_bloc_last_reset_date_prefs';
 
   ClockBloc({
     required this.checklistCubit,
     required this.prayerTimes,
   }) : super(
-    ClockState(
-      DateTime.now(),
-      _formatTime(DateTime.now()),
-      _formatDate(DateTime.now()),
-    ),
-  ) {
+          ClockState(
+            DateTime.now(),
+            _formatTime(DateTime.now()),
+            _formatDate(DateTime.now()),
+          ),
+        ) {
     _initialize();
-    on<Tick>(_onTick);
   }
 
   /// Inisialisasi timer dan pengecekan reset subuh
   Future<void> _initialize() async {
     await _loadLastResetDateFromPrefs();
-    await _checkForSubuhReset(DateTime.now());
+
+    final now = state.dateTime;
+    if (_lastResetDate != null) {
+      _lastNotificationResetDay = DateTime(
+          _lastResetDate!.year, _lastResetDate!.month, _lastResetDate!.day);
+    } else {
+      _lastNotificationResetDay = DateTime(now.year, now.month, now.day);
+    }
+
+    _resetNotifiedPrayersIfNeeded(now);
+
+    await _checkForSubuhReset(now);
+
+    _checkAndSendPrayerNotifications(now);
+
+    on<Tick>(_onTick);
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       add(Tick(DateTime.now()));
@@ -57,6 +76,7 @@ class ClockBloc extends Bloc<ClockEvent, ClockState> {
     );
 
     await _checkForSubuhReset(event.currentTime);
+    _checkAndSendPrayerNotifications(event.currentTime);
   }
 
   /// Memuat data reset terakhir dari SharedPreferences
@@ -68,7 +88,6 @@ class ClockBloc extends Bloc<ClockEvent, ClockState> {
         _lastResetDate = DateTime.tryParse(dateString);
       }
     } catch (e) {
-      // print('ERROR: Gagal memuat _lastResetDate dari SharedPreferences: $e');
       logger.e('ERROR: Gagal memuat _lastResetDate dari SharedPreferences: $e');
     }
   }
@@ -78,10 +97,30 @@ class ClockBloc extends Bloc<ClockEvent, ClockState> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final dateToSave = DateTime(date.year, date.month, date.day);
-      await prefs.setString(_lastResetDateKeyPrefs, dateToSave.toIso8601String());
+      await prefs.setString(
+          _lastResetDateKeyPrefs, dateToSave.toIso8601String());
       _lastResetDate = dateToSave;
     } catch (e) {
-      // print('ERROR: Gagal menyimpan _lastResetDate ke SharedPreferences: $e');
+      logger
+          .e('ERROR: Gagal menyimpan _lastResetDate ke SharedPreferences: $e');
+    }
+  }
+
+  bool _isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
+  }
+
+  /// Mereset daftar sholat yang sudah dinotifikasi jika hari telah berganti.
+  void _resetNotifiedPrayersIfNeeded(DateTime now) {
+    final today = DateTime(now.year, now.month, now.day);
+    if (_lastNotificationResetDay == null ||
+        !_isSameDay(_lastNotificationResetDay!, today)) {
+      logger.d(
+          "ClockBloc: Hari baru terdeteksi ($today) untuk notifikasi. Mereset daftar notifikasi.");
+      _notifiedPrayerTimesToday.clear();
+      _lastNotificationResetDay = today;
     }
   }
 
@@ -106,17 +145,49 @@ class ClockBloc extends Bloc<ClockEvent, ClockState> {
         final minute = int.tryParse(parts[1]);
 
         if (hour != null && minute != null) {
-          final subuhTimeToday = DateTime(today.year, today.month, today.day, hour, minute);
+          final subuhTimeToday =
+              DateTime(today.year, today.month, today.day, hour, minute);
           if (now.isAfter(subuhTimeToday)) {
             await checklistCubit.resetChecklistForNewDay();
+            _notifiedPrayerTimesToday.clear();
+            logger.d("Reset daftar notifikasi saat Subuh.");
             await _saveLastResetDateToPrefs(today);
           }
         }
       }
     } catch (e) {
-      // print('ERROR: Gagal parsing waktu Subuh: $e');
       logger.e('ERROR: Gagal parsing waktu Subuh: $e');
     }
+  }
+
+  /// Mengecek waktu sholat dan mengirim notifikasi jika belum dikirim
+  void _checkAndSendPrayerNotifications(DateTime now) {
+    _resetNotifiedPrayersIfNeeded(now);
+
+    prayerTimes.forEach((prayerName, timeStr) {
+      try {
+        final parts = timeStr.split(':');
+        if (parts.length == 2) {
+          final hour = int.tryParse(parts[0]);
+          final minute = int.tryParse(parts[1]);
+
+          if (hour != null && minute != null) {
+            final prayerTimeToday =
+                DateTime(now.year, now.month, now.day, hour, minute);
+
+            // Jika waktunya sudah tiba, belum dikirim hari ini
+            if (now.isAfter(prayerTimeToday) &&
+                !_notifiedPrayerTimesToday.contains(prayerName)) {
+              logger.i("Kirim notifikasi untuk $prayerName");
+              showPrayerTimeNotification(prayerName, timeStr);
+              _notifiedPrayerTimesToday.add(prayerName);
+            }
+          }
+        }
+      } catch (e) {
+        logger.e('ERROR: Gagal parsing waktu $prayerName: $e');
+      }
+    });
   }
 
   static String _formatTime(DateTime time) {

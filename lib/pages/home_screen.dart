@@ -96,7 +96,7 @@ class HomeScreen extends StatelessWidget {
                   spacing: 20.r,
                   children: [
                     Text(
-                      "Selamat Datang, Ridho-kun",
+                      "Prayer is need, not just a duty",
                       style: TextStyle(
                         fontSize: 24.r,
                         fontWeight: FontWeight.bold,
