@@ -96,7 +96,7 @@ class HomeScreen extends StatelessWidget {
                   spacing: 20.r,
                   children: [
                     Text(
-                      "Prayer is need, not just a duty",
+                      "Prayer is a need, not just a duty",
                       style: TextStyle(
                         fontSize: 24.r,
                         fontWeight: FontWeight.bold,
