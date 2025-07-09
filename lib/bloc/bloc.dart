@@ -162,9 +162,15 @@ class ClockBloc extends Bloc<ClockEvent, ClockState> {
 
   /// Mengecek waktu sholat dan mengirim notifikasi jika belum dikirim
   void _checkAndSendPrayerNotifications(DateTime now) {
-    _resetNotifiedPrayersIfNeeded(now);
+    _resetNotifiedPrayersIfNeeded(now); // Pastikan ini dipanggil
 
     prayerTimes.forEach((prayerName, timeStr) {
+      // Cek apakah notifikasi untuk sholat ini sudah dikirim hari ini
+      if (_notifiedPrayerTimesToday.contains(prayerName)) {
+        return; // Lewati jika sudah dinotifikasi
+      }
+
+      DateTime? prayerTimeToday;
       try {
         final parts = timeStr.split(':');
         if (parts.length == 2) {
@@ -172,20 +178,33 @@ class ClockBloc extends Bloc<ClockEvent, ClockState> {
           final minute = int.tryParse(parts[1]);
 
           if (hour != null && minute != null) {
-            final prayerTimeToday =
+            prayerTimeToday =
                 DateTime(now.year, now.month, now.day, hour, minute);
-
-            // Jika waktunya sudah tiba, belum dikirim hari ini
-            if (now.isAfter(prayerTimeToday) &&
-                !_notifiedPrayerTimesToday.contains(prayerName)) {
-              logger.i("Kirim notifikasi untuk $prayerName");
-              showPrayerTimeNotification(prayerName, timeStr);
-              _notifiedPrayerTimesToday.add(prayerName);
-            }
           }
         }
       } catch (e) {
-        logger.e('ERROR: Gagal parsing waktu $prayerName: $e');
+        logger.e('ERROR: Gagal parsing waktu $prayerName ($timeStr): $e');
+        return;
+      }
+
+      if (prayerTimeToday == null) {
+        logger.w(
+            'ClockBloc: Gagal mendapatkan prayerTimeToday untuk $prayerName');
+        return;
+      }
+
+      if (now.year == prayerTimeToday.year &&
+              now.month == prayerTimeToday.month &&
+              now.day == prayerTimeToday.day &&
+              now.hour == prayerTimeToday.hour &&
+              now.minute == prayerTimeToday.minute &&
+              !_notifiedPrayerTimesToday.contains(prayerName) // Double check
+          ) {
+        logger.i(
+            "Waktu notifikasi untuk $prayerName ($timeStr) telah tiba pada $now.");
+        NotificationService.showPrayerTimeNotification(
+            prayerName); // Panggil fungsi notifikasi dari notification_service.dart
+        _notifiedPrayerTimesToday.add(prayerName);
       }
     });
   }

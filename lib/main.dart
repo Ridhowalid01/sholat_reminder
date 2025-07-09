@@ -45,16 +45,34 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 Future<void> enableBackgroundMode() async {
   final androidConfig = FlutterBackgroundAndroidConfig(
     notificationTitle: "Sholat Reminder aktif",
-    notificationText: "Aplikasi berjalan di background untuk mengingatkan waktu sholat.",
-    notificationImportance: AndroidNotificationImportance.normal,
-    notificationIcon: const AndroidResource(name: 'ic_launcher', defType: 'mipmap'),
+    notificationText:
+        "Aplikasi berjalan di background untuk mengingatkan waktu sholat.",
+    notificationImportance: AndroidNotificationImportance.high,
+    notificationIcon:
+        const AndroidResource(name: 'ic_launcher', defType: 'mipmap'),
   );
 
-  await FlutterBackground.initialize(androidConfig: androidConfig);
-  await FlutterBackground.enableBackgroundExecution();
+  // await FlutterBackground.initialize(androidConfig: androidConfig);
+  // await FlutterBackground.enableBackgroundExecution();
+
+  try {
+    bool initialized =
+        await FlutterBackground.initialize(androidConfig: androidConfig);
+    if (initialized) {
+      logger.d("FlutterBackground: Initialized successfully.");
+      bool enabled = await FlutterBackground.enableBackgroundExecution();
+      logger.d("FlutterBackground: Background execution enabled: $enabled");
+      if (!enabled) {
+        logger.w(
+            "FlutterBackground: Failed to enable background execution. Check permissions and logs (adb logcat).");
+      }
+    } else {
+      logger.w("FlutterBackground: Initialization failed.");
+    }
+  } catch (e) {
+    logger.e("FlutterBackground: Error setting up background mode: $e");
+  }
 }
-
-
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
