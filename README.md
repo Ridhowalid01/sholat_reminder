@@ -1,6 +1,6 @@
-# sholat_reminder
+# Sholat Reminder App
 
-A new Flutter project.
+A mobile application that provides prayer time reminders based on GPS location, with notifications, prayer checklist, and state management using BLoC
 
 ## Getting Started
 
