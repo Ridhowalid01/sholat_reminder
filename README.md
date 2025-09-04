@@ -2,15 +2,10 @@
 
 A mobile application that provides prayer time reminders based on GPS location, with notifications, prayer checklist, and state management using BLoC
 
-## Getting Started
+## 📸 Screenshot
 
-This project is a starting point for a Flutter application.
+<p align="center">
+  <img src="dark_sholat_reminder.jpg" width="30%" />
+  <img src="light_sholat_reminder.jpg" width="30%" />
+</p>
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
